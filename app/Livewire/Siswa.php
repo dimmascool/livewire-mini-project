@@ -7,8 +7,10 @@ use Livewire\Component;
 
 class Siswa extends Component
 {
-    public $nama_lengkap, $kelas, $siswaID;
+    public $nama_lengkap, $kelas, $siswaID, $deleteID;
     public $updateButton = false;
+    public $selected_item_id = [];
+
     public function render()
     {
         return view('livewire.siswa', [
@@ -39,10 +41,15 @@ class Siswa extends Component
         $this->dispatch('siswaBaru', $siswaBaru);
     }
 
-    public function hapus($id)
+    public function hapus()
     {
-        $siswa = ModelsSiswa::find($id);
-        $siswa->delete($id);
+        if ($this->deleteID != '') {
+            ModelsSiswa::find($this->deleteID)->delete();
+            $this->deleteID = null;
+        } else {
+            ModelsSiswa::whereIn('id', $this->selected_item_id)->delete();
+            $this->selected_item_id = [];
+        }
 
         session()->flash('success', 'Data berhasil di hapus');
     }
@@ -54,6 +61,15 @@ class Siswa extends Component
         $this->kelas = $siswa->kelas;
         $this->updateButton = true;
         $this->siswaID = $id;
+    }
+
+    public function delete_confirmation($id)
+    {
+        if ($id != '') {
+            $this->deleteID = $id;
+        } else {
+            $this->deleteID = '';
+        }
     }
 
     public function edit()
